@@ -1,39 +1,39 @@
 import React, { useEffect, useState } from "react";
+import { Container, Hat } from "./style";
+import ImageMenu from '../../components/ImageMenu';
 import hat from "../../assets/img/bone.webp";
 import printImage from "../../assets/img/print.png";
 import mergeImages from "merge-images";
-import { Container, Hat } from "./style";
+import ImageModel from '../../models/ImageModel';
 
 export default function Home() {
-  const [imageResult, setImageResult] = useState<string>();
-  const [background] = useState<string>(hat);
-  const [print] = useState<string>(printImage);
+  const [imageResult, setImageResult] = useState<ImageModel>(new ImageModel(hat));
+  const [background] = useState<ImageModel>(new ImageModel(hat));
+  const [print, setPrint] = useState<ImageModel>(new ImageModel(printImage, 0.5));
 
   useEffect(() => {
-    mergeImages([
-      { src: background },
-      {
-        src: print,
-        x: getImageCenter(background).x - getImageCenter(print).x,
-        y: getImageCenter(background).y - getImageCenter(print).y - 80,
-      },
-    ]).then((imgBase64) => {
-      setImageResult(imgBase64);
+
+    mergeImages(
+      [
+        { src: background.src },
+        {
+          src: print.src,
+          x: background.getCenter().x - print.getCenter().x,
+          y: background.getCenter().y - print.getCenter().y - 80,
+          opacity: print.opacity,
+        },
+      ],
+    ).then((img) => {
+      setImageResult(new ImageModel(img));
     });
   }, [background, print]);
 
-  function getImageCenter(src: string) {
-    const img = new Image();
-    img.src = src;
-
-    return { x: img.width / 2, y: img.height / 2 };
-  }
-
   return (
     <Container>
+      <ImageMenu setImage={setPrint}/>
       <h1>Personalize seu boné!</h1>
 
-      <Hat src={imageResult} />
+      <Hat src={imageResult?.src} />
     </Container>
   );
 }
